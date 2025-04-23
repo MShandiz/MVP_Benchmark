@@ -12,7 +12,7 @@ import numpy as np
 import open3d as o3d
 
 # Open the .h5 file
-with h5py.File(r"C:\Users\moaks\OneDrive\Documents\Bitbucket\MVP_Benchmark\completion\log\vrcnet_cd_debug_2025-04-21_23-00-07\results.h5", 'r') as f:
+with h5py.File(r"C:\Users\moaks\OneDrive\Documents\Bitbucket\MVP_Benchmark_fork\completion\results\complete_pipeline_synthetic_data\results.h5", 'r') as f:
     # List all groups
     keys = list(f.keys())
     print("Top-level keys:", keys)
@@ -35,7 +35,7 @@ with h5py.File(r"C:\Users\moaks\OneDrive\Documents\Bitbucket\MVP_Benchmark\compl
 
 
 # Open the .h5 file
-with h5py.File(r"C:\Users\moaks\OneDrive\Documents\Bitbucket\MVP_Benchmark\completion\data\Spine\dataset_verse_test_complete_pipeline.h5", 'r') as f:
+with h5py.File(r"C:\Users\moaks\OneDrive\Documents\Bitbucket\MVP_Benchmark_fork\completion\data\Spine\dataset_verse_test_complete_pipeline.h5", 'r') as f:
     # List all groups
     keys = list(f.keys())
     print("Top-level keys:", keys)
@@ -59,9 +59,9 @@ with h5py.File(r"C:\Users\moaks\OneDrive\Documents\Bitbucket\MVP_Benchmark\compl
 
 
 
-incomplete_points = incomplete_pcds[0] 
-complete_points = complete_pcds[0] 
-resultPoints = results[0]    
+incomplete_points = incomplete_pcds[10] 
+complete_points = complete_pcds[10] 
+resultPoints = results[10]    
 
 
 
