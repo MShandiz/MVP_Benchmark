@@ -14,7 +14,8 @@ void dynamic_voxelize_kernel(const torch::TensorAccessor<T, 2> points,
                              const int NDim) {
   const int ndim_minus_1 = NDim - 1;
   bool failed = false;
-  int coor[NDim];
+//   int coor[NDim];
+  std::vector<int> coor(NDim);
   int c;
 
   for (int i = 0; i < num_points; ++i) {

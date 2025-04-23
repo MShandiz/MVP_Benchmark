@@ -1,23 +1,23 @@
-batch_size: 2
-workers: 0
+batch_size: 8
+workers: 2
 nepoch: 100
 model_name: vrcnet
 
-load_model: False
+load_model: ./log/vrcnet_cd_debug_2025-04-22_23-17-33/best_cd_p_network.pth
 start_epoch: 0
 num_points: 4096
 num_partial_scans_per_mesh: 1
 
-path_to_train_dataset: dataset/dataset_verse_training.h5
-path_to_val_dataset: dataset/dataset_verse_validation.h5
-path_to_test_dataset: dataset/dataset_verse_test.h5
+path_to_train_dataset: data/Spine/dataset_verse_training_complete_pipeline.h5
+path_to_val_dataset: data/spine/dataset_verse_validation_complete_pipeline.h5
+path_to_test_dataset: data/Spine/dataset_verse_test_complete_pipeline.h5
 
 work_dir: log/
 flag: debug
 loss: cd
 manual_seed: null
 use_mean_feature: False
-step_interval_to_print: 500
+step_interval_to_print: 10
 epoch_interval_to_save: 1
 epoch_interval_to_val: 1
 varying_constant: 0.01, 0.1, 0.5, 1

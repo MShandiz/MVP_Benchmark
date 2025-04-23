@@ -1,3 +1,4 @@
+import sys
 from setuptools import find_packages, setup
 
 import os
@@ -35,28 +36,33 @@ def make_cuda_ext(name,
                   extra_include_path=[]):
 
     define_macros = []
-    extra_compile_args = {'cxx': [] + extra_args}
+    extra_compile_args = {
+        'cxx': ['/std:c++14'] if sys.platform == 'win32' else ['-std=c++14']
+    }
+
+    include_dirs = [os.path.join(*module.split('.'))] + extra_include_path
 
     if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
         define_macros += [('WITH_CUDA', None)]
         extension = CUDAExtension
-        extra_compile_args['nvcc'] = extra_args + [
+        extra_compile_args['nvcc'] = [
+            '-O2',
             '-D__CUDA_NO_HALF_OPERATORS__',
             '-D__CUDA_NO_HALF_CONVERSIONS__',
             '-D__CUDA_NO_HALF2_OPERATORS__',
         ]
         sources += sources_cuda
     else:
-        print('Compiling {} without CUDA'.format(name))
+        print(f'Compiling {name} without CUDA')
         extension = CppExtension
-        # raise EnvironmentError('CUDA is required to compile MMDetection!')
 
     return extension(
-        name='{}.{}'.format(module, name),
-        sources=[os.path.join(*module.split('.'), p) for p in sources],
-        include_dirs=extra_include_path,
+        name=f'{module}.{name}',
+        sources=[os.path.join(*module.split('.'), src) for src in sources],
+        include_dirs=include_dirs,
         define_macros=define_macros,
-        extra_compile_args=extra_compile_args)
+        extra_compile_args=extra_compile_args
+    )
 
 
 def parse_requirements(fname='requirements.txt', with_version=True):
@@ -188,7 +194,7 @@ if __name__ == '__main__':
                     'src/maxpool.cc',
                     'src/maxpool_cuda.cu',
                 ],
-                extra_args=['-w', '-std=c++14']),
+                extra_args=['-w', '/std=c++14']),
             make_cuda_ext(
                 name='iou3d_cuda',
                 module='ops.iou3d',

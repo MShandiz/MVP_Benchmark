@@ -1,20 +1,23 @@
 // Modified from
 // https://github.com/sshaoshuai/Pointnet2.PyTorch/tree/master/pointnet2/src/ball_query.cpp
 
-#include <THC/THC.h>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <torch/extension.h>
 #include <torch/serialize/tensor.h>
+#include <ATen/cuda/CUDAContext.h>  // ✅ REQUIRED for getCurrentCUDAStream()
 
 #include <vector>
 
-extern THCState *state;
+// ✅ NO NEED FOR: #include <THC/THC.h>
+// ✅ NO NEED FOR: extern THCState *state;
 
 #define CHECK_CUDA(x) \
-  TORCH_CHECK(x.type().is_cuda(), #x, " must be a CUDAtensor ")
+  TORCH_CHECK(x.is_cuda(), #x " must be a CUDA tensor")
+
 #define CHECK_CONTIGUOUS(x) \
-  TORCH_CHECK(x.is_contiguous(), #x, " must be contiguous ")
+  TORCH_CHECK(x.is_contiguous(), #x " must be contiguous")
+
 #define CHECK_INPUT(x) \
   CHECK_CUDA(x);       \
   CHECK_CONTIGUOUS(x)
@@ -32,16 +35,23 @@ int ball_query_wrapper(int b, int n, int m, float min_radius, float max_radius, 
                        at::Tensor idx_tensor) {
   CHECK_INPUT(new_xyz_tensor);
   CHECK_INPUT(xyz_tensor);
+  CHECK_INPUT(idx_tensor);
+
   const float *new_xyz = new_xyz_tensor.data_ptr<float>();
   const float *xyz = xyz_tensor.data_ptr<float>();
   int *idx = idx_tensor.data_ptr<int>();
 
-  cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
+  // ✅ Get the current CUDA stream using modern PyTorch API
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+  // ✅ Call your CUDA kernel launcher
   ball_query_kernel_launcher(b, n, m, min_radius, max_radius,
                              nsample, new_xyz, xyz, idx, stream);
   return 1;
 }
 
+// ✅ Bindings for Python using pybind11
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
-  m.def("ball_query_wrapper", &ball_query_wrapper, "ball_query_wrapper");
+  m.def("ball_query_wrapper", &ball_query_wrapper, "ball_query_wrapper (CUDA)");
 }
+

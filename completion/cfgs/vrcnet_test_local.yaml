@@ -1,14 +1,15 @@
-batch_size: 2
+batch_size: 8
 workers: 0
 nepoch: 100
 model_name: vrcnet
 
-load_model: weights/best_network.pth
+# load_model: weights/best_network.pth
+load_model: ./log/vrcnet_cd_debug_2025-04-22_23-17-33/best_cd_p_network.pth
 
 num_partial_scans_per_mesh: 1
-path_to_train_dataset: dataset/dataset_verse_training.h5
-path_to_val_dataset: dataset/dataset_verse_validation.h5
-path_to_test_dataset: dataset/dataset_verse_test.h5
+path_to_train_dataset: data/Spine/dataset_verse_training_complete_pipeline.h5
+path_to_val_dataset: data/spine/dataset_verse_validation_complete_pipeline.h5
+path_to_test_dataset: data/Spine/dataset_verse_test_complete_pipeline.h5
 
 name_folder_to_save_results: complete_pipeline_synthetic_data
 

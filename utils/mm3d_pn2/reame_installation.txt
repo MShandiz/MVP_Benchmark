@@ -1,0 +1,9 @@
+---- after creating mvp conda environment and installing the required packages
+
+
+conda activate mvp
+set DISTUTILS_USE_SDK = 1
+call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+cd C:\Users\moaks\OneDrive\Documents\Bitbucket\MVP_Benchmark_fork\utils\mm3d_pn2
+pip install -v -e .
+

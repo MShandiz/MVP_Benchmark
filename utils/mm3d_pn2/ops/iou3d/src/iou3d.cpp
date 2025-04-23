@@ -103,7 +103,7 @@ int nms_gpu(at::Tensor boxes, at::Tensor keep,
 
   int boxes_num = boxes.size(0);
   const float *boxes_data = boxes.data_ptr<float>();
-  long *keep_data = keep.data_ptr<long>();
+  int64_t *keep_data = keep.data_ptr<int64_t>();
 
   const int col_blocks = DIVUP(boxes_num, THREADS_PER_BLOCK_NMS);
 
@@ -124,8 +124,9 @@ int nms_gpu(at::Tensor boxes, at::Tensor keep,
 
   cudaFree(mask_data);
 
-  unsigned long long remv_cpu[col_blocks];
-  memset(remv_cpu, 0, col_blocks * sizeof(unsigned long long));
+//   unsigned long long remv_cpu[col_blocks];
+  std::vector<unsigned long long> remv_cpu(col_blocks, 0);
+  //memset(remv_cpu, 0, col_blocks * sizeof(unsigned long long));
 
   int num_to_keep = 0;
 
@@ -151,35 +152,38 @@ int nms_normal_gpu(at::Tensor boxes, at::Tensor keep,
   // params boxes: (N, 5) [x1, y1, x2, y2, ry]
   // params keep: (N)
 
-  CHECK_INPUT(boxes);
-  CHECK_CONTIGUOUS(keep);
-  cudaSetDevice(device_id);
+CHECK_INPUT(boxes);
+CHECK_CONTIGUOUS(keep);
+cudaSetDevice(device_id);
 
-  int boxes_num = boxes.size(0);
-  const float *boxes_data = boxes.data_ptr<float>();
-  long *keep_data = keep.data_ptr<long>();
+int boxes_num = boxes.size(0);
+const float* boxes_data = boxes.data_ptr<float>();
+int64_t* keep_data = keep.data_ptr<int64_t>();
 
-  const int col_blocks = DIVUP(boxes_num, THREADS_PER_BLOCK_NMS);
+const int col_blocks = DIVUP(boxes_num, THREADS_PER_BLOCK_NMS);
 
-  unsigned long long *mask_data = NULL;
-  CHECK_ERROR(cudaMalloc((void **)&mask_data,
-                         boxes_num * col_blocks * sizeof(unsigned long long)));
-  nmsNormalLauncher(boxes_data, mask_data, boxes_num, nms_overlap_thresh);
+// Allocate GPU memory
+unsigned long long* mask_data = nullptr;
+CHECK_ERROR(cudaMalloc((void**)&mask_data,
+                       boxes_num * col_blocks * sizeof(unsigned long long)));
 
-  // unsigned long long mask_cpu[boxes_num * col_blocks];
-  // unsigned long long *mask_cpu = new unsigned long long [boxes_num *
-  // col_blocks];
-  std::vector<unsigned long long> mask_cpu(boxes_num * col_blocks);
+// Run CUDA kernel
+nmsNormalLauncher(boxes_data, mask_data, boxes_num, nms_overlap_thresh);
 
-  //    printf("boxes_num=%d, col_blocks=%d\n", boxes_num, col_blocks);
-  CHECK_ERROR(cudaMemcpy(&mask_cpu[0], mask_data,
-                         boxes_num * col_blocks * sizeof(unsigned long long),
-                         cudaMemcpyDeviceToHost));
+// Allocate CPU-side buffer using std::vector (safe & clean)
+std::vector<unsigned long long> mask_cpu(boxes_num * col_blocks);
 
-  cudaFree(mask_data);
+// Copy result back from GPU to CPU
+CHECK_ERROR(cudaMemcpy(mask_cpu.data(), mask_data,
+                       boxes_num * col_blocks * sizeof(unsigned long long),
+                       cudaMemcpyDeviceToHost));
 
-  unsigned long long remv_cpu[col_blocks];
-  memset(remv_cpu, 0, col_blocks * sizeof(unsigned long long));
+// Don’t forget to free GPU memory
+CHECK_ERROR(cudaFree(mask_data));
+
+//   unsigned long long remv_cpu[col_blocks];
+  std::vector<unsigned long long> remv_cpu(col_blocks, 0);
+//   memset(remv_cpu, 0, col_blocks * sizeof(unsigned long long));
 
   int num_to_keep = 0;
 

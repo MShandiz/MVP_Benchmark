@@ -224,7 +224,7 @@ if __name__ == "__main__":
 
     torch.cuda.empty_cache()
 
-    time = datetime.datetime.now().isoformat()[:19]
+    time = datetime.datetime.now().isoformat()[:19].replace(":", "-").replace("T", "_")
     if args.load_model:
         exp_name = os.path.basename(os.path.dirname(args.load_model))
         log_dir = os.path.dirname(args.load_model)
